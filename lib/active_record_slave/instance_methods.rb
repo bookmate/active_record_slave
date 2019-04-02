@@ -26,9 +26,16 @@ module ActiveRecordSlave
       # Read from master when forced by thread variable, or
       # in a transaction and not ignoring transactions
       ActiveRecordSlave.read_from_master? ||
+        database_name_from_config != database_name_from_raw_connection ||
         (open_transactions > 0) && !ActiveRecordSlave.ignore_transactions?
     end
 
+    def database_name_from_config
+      @application_database_name ||= Rails.application.config_for(:database).fetch('database')
+    end
+
+    def database_name_from_raw_connection
+      @connection_database_name ||= raw_connection.query_options[:database]
+    end
   end
 end
-
