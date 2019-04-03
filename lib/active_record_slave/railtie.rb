@@ -17,7 +17,8 @@ module ActiveRecordSlave #:nodoc:
     config.active_record_slave = ::ActiveRecordSlave
 
     # Initialize ActiveRecordSlave
-    initializer "load active_record_slave", :after => "active_record.initialize_database" do
+    initializer "load active_record_slave", :after => "active_record.initialize_database" do |app|
+      app.config.active_record_slave.master_database_name = app.config_for('database').fetch('database')
       ActiveRecordSlave.install!
     end
 

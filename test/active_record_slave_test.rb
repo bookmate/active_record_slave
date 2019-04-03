@@ -7,9 +7,26 @@ l.level                           = ::Logger::DEBUG
 ActiveRecord::Base.logger         = l
 ActiveRecord::Base.configurations = YAML::load(ERB.new(IO.read('test/database.yml')).result)
 
+master_config = ActiveRecord::Base.configurations['test']
+slave_config = master_config.fetch('slave')
+other_database_config = ActiveRecord::Base.configurations['other_database']
+
+def create_database_unless_exists(database_name)
+  ActiveRecord::Base.connection.create_database(database_name)
+rescue ActiveRecord::StatementInvalid => error
+  ActiveRecord::Base.logger.error("Database already exists")
+end
+
+ActiveRecord::Base.establish_connection(master_config.except('database'))
+ActiveRecord::Base.establish_connection(slave_config.except('database'))
+ActiveRecord::Base.establish_connection(other_database_config.except('database'))
+create_database_unless_exists(master_config.fetch('database'))
+create_database_unless_exists(slave_config.fetch('database'))
+create_database_unless_exists(other_database_config.fetch('database'))
+
 # Define Schema in second database (slave)
 # Note: This is not be required when the master database is being replicated to the slave db
-ActiveRecord::Base.establish_connection(ActiveRecord::Base.configurations['test']['slave'])
+ActiveRecord::Base.establish_connection(slave_config)
 
 # Create table users in database active_record_slave_test
 ActiveRecord::Schema.define :version => 0 do
@@ -20,10 +37,21 @@ ActiveRecord::Schema.define :version => 0 do
 end
 
 # Define Schema in master database
-ActiveRecord::Base.establish_connection(:test)
+ActiveRecord::Base.establish_connection(:other_database)
 
 # Create table users in database active_record_slave_test
 ActiveRecord::Schema.define :version => 0 do
+  create_table :other_database_users, :force => true do |t|
+    t.string :name
+    t.string :address
+  end
+end
+
+# Define Schema in master database
+ActiveRecord::Base.establish_connection(:test)
+
+# Create table users in database active_record_slave_test
+ActiveRecord::Schema.define :version => 1 do
   create_table :users, :force => true do |t|
     t.string :name
     t.string :address
@@ -34,14 +62,52 @@ end
 class User < ActiveRecord::Base
 end
 
+class OtherDatabaseUser < ActiveRecord::Base
+  establish_connection(:other_database)
+end
+
 # Install ActiveRecord slave. Done automatically by railtie in a Rails environment
 # Also tell it to use the test environment since Rails.env is not available
 ActiveRecordSlave.install!(nil, 'test')
+ActiveRecordSlave.master_database_name = master_config.fetch('database')
 
 #
 # Unit Test for active_record_slave
 #
 class ActiveRecordSlaveTest < Minitest::Test
+  describe 'work with model in other database' do
+    before do
+      ActiveRecordSlave.ignore_transactions = false
+      OtherDatabaseUser.delete_all
+
+      @name    = "Joe Bloggs"
+      @address = "Somewhere"
+      @user    = OtherDatabaseUser.new(
+        :name    => @name,
+        :address => @address
+      )
+    end
+
+    after do
+      OtherDatabaseUser.delete_all
+    end
+
+    it 'saves to other database' do
+      assert_equal true, @user.save!
+    end
+
+    it 'saves to other database, read from other database' do
+      # Read from "other database"
+      assert_equal 0, OtherDatabaseUser.where(:name => @name, :address => @address).count
+
+      # Write to "other database"
+      assert_equal true, @user.save!
+
+      # Read from "other database"
+      assert_equal 1, OtherDatabaseUser.where(:name => @name, :address => @address).count
+    end
+  end
+
   describe 'the active_record_slave gem' do
 
     before do

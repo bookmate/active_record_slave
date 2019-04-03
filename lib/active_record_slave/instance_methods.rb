@@ -12,7 +12,7 @@ module ActiveRecordSlave
       # Replace #exec_query with one that calls the slave connection instead
       eval <<-METHOD
       def #{select_method}(sql, name = nil, *args)
-        return super if active_record_slave_read_from_master?
+        return super if active_record_slave_read_from_master? || use_original_method?
 
         ActiveRecordSlave.read_from_master do
           Slave.connection.#{select_method}(sql, "Slave: \#{name || 'SQL'}", *args)
@@ -26,12 +26,11 @@ module ActiveRecordSlave
       # Read from master when forced by thread variable, or
       # in a transaction and not ignoring transactions
       ActiveRecordSlave.read_from_master? ||
-        database_name_from_config != database_name_from_raw_connection ||
         (open_transactions > 0) && !ActiveRecordSlave.ignore_transactions?
     end
 
-    def database_name_from_config
-      @application_database_name ||= Rails.application.config_for(:database).fetch('database')
+    def use_original_method?
+      ActiveRecordSlave.master_database_name != database_name_from_raw_connection
     end
 
     def database_name_from_raw_connection

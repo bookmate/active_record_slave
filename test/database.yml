@@ -1,12 +1,32 @@
+# Чтобы тесты заработали нужно поднять два разных! инстанса mysql (обычных, без репликации)
+# на разных портах (3006 - мастер, 3008 - слейв).
 test:
-  adapter:  sqlite3
-  database: test/test.sqlite3
+  adapter:  mysql2
+  database: active_record_slave_test
   pool:     5
   timeout:  5000
+  username: root
+  password: root
+  host: 127.0.0.1
+  port: 3306
   # Make the slave a separate database that is not slaved to ensure reads
   # and writes go to the appropriate databases
   slave:
-    adapter:  sqlite3
-    database: test/test_slave.sqlite3
+    adapter:  mysql2
+    database: active_record_slave_test
     pool:     5
     timeout:  5000
+    username: root
+    password: root
+    host: 127.0.0.1
+    port: 3308
+
+other_database:
+  adapter:  mysql2
+  database: active_record_slave_test_other_database
+  pool:     5
+  timeout:  5000
+  username: root
+  password: root
+  host: 127.0.0.1
+  port: 3306

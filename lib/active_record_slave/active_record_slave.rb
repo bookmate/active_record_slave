@@ -93,6 +93,16 @@ module ActiveRecordSlave
     @ignore_transactions = ignore_transactions
   end
 
+  def self.master_database_name=(database_name)
+    @master_database_name = database_name
+  end
+
+  def self.master_database_name
+    raise "ActiveRecordSlave.master_database_name must be set" unless @master_database_name
+
+    @master_database_name
+  end
+
   ##############################################################################
   private
 
