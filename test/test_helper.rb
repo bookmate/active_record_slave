@@ -12,28 +12,25 @@ l.level                           = ::Logger::DEBUG
 ActiveRecord::Base.logger         = l
 ActiveRecord::Base.configurations = YAML::load(ERB.new(IO.read('test/database.yml')).result)
 
+def create_schema
+  # Create table users in database active_record_replica_test
+  ActiveRecord::Schema.define :version => 0 do
+    create_table :users, :force => true do |t|
+      t.string :name
+      t.string :address
+    end
+  end
+end
+
 # Define Schema in second database (replica)
 # Note: This is not be required when the primary database is being replicated to the replica db
 ActiveRecord::Base.establish_connection(ActiveRecord::Base.configurations['test'].symbolize_keys[:slave])
-
-# Create table users in database active_record_replica_test
-ActiveRecord::Schema.define :version => 0 do
-  create_table :users, :force => true do |t|
-    t.string :name
-    t.string :address
-  end
-end
+create_schema
 
 # Define Schema in primary database
 ActiveRecord::Base.establish_connection(:test)
 
-# Create table users in database active_record_replica_test
-ActiveRecord::Schema.define :version => 0 do
-  create_table :users, :force => true do |t|
-    t.string :name
-    t.string :address
-  end
-end
+create_schema
 
 # AR Model
 class User < ActiveRecord::Base
