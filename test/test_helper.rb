@@ -22,20 +22,24 @@ def create_schema
   end
 end
 
-# Define Schema in second database (replica)
-# Note: This is not be required when the primary database is being replicated to the replica db
-ActiveRecord::Base.establish_connection(ActiveRecord::Base.configurations['test'].symbolize_keys[:slave])
-create_schema
-
-# Define Schema in primary database
-ActiveRecord::Base.establish_connection(:test)
-
-create_schema
-
 # AR Model
 class User < ActiveRecord::Base
 end
 
+# Define Schema in second database (replica)
+# Note: This is not be required when the primary database is being replicated to the replica db
+ActiveRecord::Base.establish_connection(ActiveRecord::Base.configurations['test'].symbolize_keys[:slave])
+create_schema
+User.create!(name: 'slave')
+
+ActiveRecord::Base.establish_connection(ActiveRecord::Base.configurations['test'].symbolize_keys[:slow_slave])
+create_schema
+User.create!(name: 'slow slave')
+
+# Define Schema in primary database
+ActiveRecord::Base.establish_connection(:test)
+create_schema
+
 # Install ActiveRecord replica. Done automatically by railtie in a Rails environment
 # Also tell it to use the test environment since Rails.env is not available
-ActiveRecordReplica.install!(nil, 'test')
+ActiveRecordReplica.install!(nil, 'test', [:slave, :slow_slave])
