@@ -356,7 +356,7 @@ ActiveRecordReplica.install!(nil, nil, ['slave', 'slow_slave'])
 
 Then use this method and supply block to read from the particular replica database:
 
-```yaml
+```ruby
 ActiveRecordReplica.read_from(:slow_slave) do
    User.count
 end
