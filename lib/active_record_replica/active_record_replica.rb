@@ -28,12 +28,12 @@ module ActiveRecordReplica
     roles.each do |role|
       replica_config = ActiveRecord::Base.configurations[environment || Rails.env].symbolize_keys[role.to_sym]
       unless replica_config
-        ActiveRecord::Base.logger.info("ActiveRecordReplica not installed since no replica database defined")
+        ActiveRecord::Base.logger.info("ActiveRecordReplica not installed since no #{slave} database defined")
         next
       end
 
       version = ActiveRecordReplica::VERSION
-      ActiveRecord::Base.logger.info("ActiveRecordReplica.install! v#{version} Establishing connection to replica database")
+      ActiveRecord::Base.logger.info("ActiveRecordReplica.install! v#{version} Establishing connection to #{role} database")
 
       replica_reader_klass = Class.new(ActiveRecord::Base) do
         # Prevent Rails from trying to create an instance of this model
