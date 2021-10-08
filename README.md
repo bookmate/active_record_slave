@@ -351,7 +351,7 @@ end
 Create an initializer file config/initializer/active_record_replica.rb with following content:
 
 ```ruby
-ActiveRecordReplica.install!(nil, nil, ['slave', 'slow_slave'])
+ActiveRecordReplica.install!(nil, nil, [:slave, :slow_slave], default: :slave)
 ```
 
 Then use this method and supply block to read from the particular replica database:
