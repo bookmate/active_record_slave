@@ -11,9 +11,8 @@ module ActiveRecordReplica
   #   environment:
   #     In a non-Rails environment, supply the environment such as
   #     'development', 'production'
-  def self.install!(adapter_class = nil, environment = nil, roles = ['slave'])
+  def self.install!(adapter_class = nil, environment = nil, roles = [:slave], default: :slave)
     roles = roles.map(&:to_sym)
-    default_role = roles.first
 
     # When the DBMS is not available, an exception (e.g. PG::ConnectionBad) is raised
     active_db_connection = ActiveRecord::Base.connection.active? rescue false
@@ -52,7 +51,7 @@ module ActiveRecordReplica
     end
 
     @roles = [:primary] + roles
-    read_from!(default_role)
+    read_from!(default)
   end
 
   # Force reads for the supplied block to read from the primary database

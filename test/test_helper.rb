@@ -42,4 +42,4 @@ create_schema
 
 # Install ActiveRecord replica. Done automatically by railtie in a Rails environment
 # Also tell it to use the test environment since Rails.env is not available
-ActiveRecordReplica.install!(nil, 'test', [:slave, :slow_slave])
+ActiveRecordReplica.install!(nil, 'test', [:slave, :slow_slave], default: :slave)
