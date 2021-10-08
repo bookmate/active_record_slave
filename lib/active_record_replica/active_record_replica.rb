@@ -28,7 +28,7 @@ module ActiveRecordReplica
     roles.each do |role|
       replica_config = ActiveRecord::Base.configurations[environment || Rails.env].symbolize_keys[role.to_sym]
       unless replica_config
-        ActiveRecord::Base.logger.info("ActiveRecordReplica not installed since no #{slave} database defined")
+        ActiveRecord::Base.logger.info("ActiveRecordReplica not installed since no #{role} database defined")
         next
       end
 
