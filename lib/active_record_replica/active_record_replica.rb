@@ -26,7 +26,7 @@ module ActiveRecordReplica
     base.include(Extensions)
 
     roles.each do |role|
-      replica_config = ActiveRecord::Base.configurations[environment || Rails.env].symbolize_keys[role.to_sym]
+      replica_config = config_for(role, environment)
       unless replica_config
         ActiveRecord::Base.logger.info("ActiveRecordReplica not installed since no #{role} database defined")
         next
@@ -164,6 +164,17 @@ module ActiveRecordReplica
 
   def self.assert_role(role)
     raise "Undefined role: #{role.inspect}" unless @roles.include?(role)
+  end
+
+  def self.config_for(role, environment = nil)
+    configs = ActiveRecord::Base.configurations
+    env_config = if ActiveRecord.version >= Gem::Version.new('6.1')
+      configs[environment || Rails.env]
+    else
+      configs[environment || Rails.env]
+    end
+
+    env_config.symbolize_keys[role.to_sym]
   end
 
   @ignore_transactions = false

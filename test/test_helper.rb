@@ -26,13 +26,20 @@ end
 class User < ActiveRecord::Base
 end
 
+configs = ActiveRecord::Base.configurations
+env_config = if ActiveRecord.version >= Gem::Version.new('6.1')
+  configs.configs_for(env_name: 'test')[0].configuration_hash
+else
+  configs['test']
+end.symbolize_keys
+
 # Define Schema in second database (replica)
 # Note: This is not be required when the primary database is being replicated to the replica db
-ActiveRecord::Base.establish_connection(ActiveRecord::Base.configurations['test'].symbolize_keys[:slave])
+ActiveRecord::Base.establish_connection(env_config[:slave])
 create_schema
 User.create!(name: 'slave')
 
-ActiveRecord::Base.establish_connection(ActiveRecord::Base.configurations['test'].symbolize_keys[:slow_slave])
+ActiveRecord::Base.establish_connection(env_config[:slow_slave])
 create_schema
 User.create!(name: 'slow slave')
 
