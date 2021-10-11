@@ -169,7 +169,7 @@ module ActiveRecordReplica
   def self.config_for(role, environment = nil)
     configs = ActiveRecord::Base.configurations
     env_config = if ActiveRecord.version >= Gem::Version.new('6.1')
-      configs[environment || Rails.env]
+      configs.configs_for(env_name: environment || Rails.env)[0].configuration_hash
     else
       configs[environment || Rails.env]
     end
