@@ -142,6 +142,16 @@ module ActiveRecordReplica
     @ignore_transactions = ignore_transactions
   end
 
+  def self.main_database_name=(database_name)
+    @main_database_name = database_name
+  end
+
+  def self.main_database_name
+    raise 'ActiveRecordReplica.main_database_name must be set' unless @main_database_name
+
+    @main_database_name
+  end
+
   private
 
   def self.thread_variable_equals(key, value)

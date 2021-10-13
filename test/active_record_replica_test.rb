@@ -189,5 +189,25 @@ class ActiveRecordReplicaTest < Minitest::Test
         end
       end
     end
+
+    describe "work with other database" do
+      let(:book) { Book.new(title: book_title) }
+      let(:book_title) { '1984' }
+
+      before do
+        Book.delete_all
+      end
+
+      it "saves instance of model" do
+        assert_equal 0, Book.where(title: book_title).count
+        book.save!
+        assert_equal 1, Book.where(title: book_title).count
+      end
+
+      it "reads record from other database" do
+        book.save!
+        assert_equal book_title, Book.find_by(title: book_title).title
+      end
+    end
   end
 end

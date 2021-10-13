@@ -1,17 +1,39 @@
 test:
-  adapter:  sqlite3
-  database: test/test.sqlite3
+  adapter:  mysql2
+  database: test
   pool:     5
   timeout:  5000
+  username: root
+  password: password
+  host: 127.0.0.1
+  port: 3306
   # Make the replica a separate database that is not replicated to ensure reads
   # and writes go to the appropriate databases
   slave:
-    adapter:  sqlite3
-    database: test/test_replica.sqlite3
+    adapter:  mysql2
+    database: test_slave
     pool:     5
     timeout:  5000
+    username: root
+    password: password
+    host: 127.0.0.1
+    port: 3306
   slow_slave:
-    adapter:  sqlite3
-    database: test/test_slow_replica.sqlite3
+    adapter:  mysql2
+    database: test_slow_slave
     pool:     5
     timeout:  5000
+    username: root
+    password: password
+    host: 127.0.0.1
+    port: 3306
+
+other:
+  adapter:  mysql2
+  database: other
+  pool:     5
+  timeout:  5000
+  username: root
+  password: password
+  host: 127.0.0.1
+  port: 3308
