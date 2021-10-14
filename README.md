@@ -6,6 +6,9 @@
 
 Redirect ActiveRecord (Rails) reads to replica databases while ensuring all writes go to the primary database.
 
+## Note about current branch
+Works only `mysql`-like databases (e.g. `MariaDB`).
+
 ## Status
 This is a slight modification of Rocket Job's original library, simply renaming it from `active_record_slave` to `active_record_replica`.
 
